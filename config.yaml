@@ -32,14 +32,22 @@ highlights:
   min_seconds: 20
   max_seconds: 50
   min_words: 40                        # a clip needs real speech
-  min_score: 7.0                       # Claude's 1-10 score + up to 2 for loud audio; raise to be pickier
+  min_score: 7.0                       # the AI's 1-10 score + up to 2 for loud audio; raise to be pickier
   banned_phrases:                      # clips containing any of these are dropped; add your own
     - "my address is"
     - "my phone number is"
     - "credit card number"
 
+# Free LLM providers, tried in this order; only those with a key (GitHub secret) are used.
+# If one is rate limited or out of daily quota the next one takes over.
 ai:
-  model: claude-sonnet-5-5
+  order: [gemini, groq, openrouter, anthropic]
+  # Model ids change over time. If a provider logs "HTTP 404 ... model", edit its model here.
+  providers:
+    - {name: gemini,     model: gemini-3.8-flash}        # free key: aistudio.google.com/apikey
+    - {name: groq,       model: openai/gpt-oss-120b}     # free key: console.groq.com
+    - {name: openrouter, model: openrouter/free}         # free key: openrouter.ai/keys (last resort)
+    - {name: anthropic,  model: claude-sonnet-5-5}       # optional, paid
 
 captions:
   font_name: "DejaVu Sans"             # or put a .ttf in assets/fonts/ and use its family name

@@ -1,8 +1,8 @@
 """Find the best 20-50 second moments in a long video.
 
-Signals: (1) loudness spikes in the audio, (2) Claude reading the transcript for self-contained moments
+Signals: (1) loudness spikes in the audio, (2) a free LLM reading the transcript for self-contained moments
 with a setup and a payoff. Clip edges are snapped to sentence boundaries so nothing starts or ends mid-word.
-Without an ANTHROPIC_API_KEY (or if the API is down) a simpler energy-and-density heuristic is used.
+Without any LLM key (or if every provider is down) a simpler energy-and-density heuristic is used.
 """
 import json
 import os
@@ -11,6 +11,8 @@ import sys
 import wave
 
 import numpy as np
+
+import llm
 
 SYSTEM = """You pick the best short-form clips from the transcript of a long video or livestream.
 
@@ -104,22 +106,12 @@ def clean_title(t):
 
 
 # ---------- candidates ----------
-def _client():
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        return None
-    from anthropic import Anthropic
-    return Anthropic()
-
-
-def ask_claude(client, model, source, video, chunk, hints, k):
-    lines = "\n".join(f"[{s['s']:.1f}-{s['e']:.1f}] {s['text']}" for s in chunk)
+def ask_llm(ai_cfg, source, video, chunk, hints, k):
+    lines = "\n".join(f"[{c['s']:.1f}-{c['e']:.1f}] {c['text']}" for c in chunk)
     user = (f"Source: {source['name']}\nVideo: {video['title']}\n"
             f"Loudest moments in this part of the audio (seconds): {hints or 'none stand out'}\n"
             f"Return up to {k} clips.\n\nTRANSCRIPT (each line: [start-end seconds] text):\n{lines}")
-    r = client.messages.create(model=model, max_tokens=2500, system=SYSTEM,
-                               messages=[{"role": "user", "content": user}])
-    m = re.search(r"\{.*\}", r.content[0].text, re.S)
-    return json.loads(m.group(0)).get("clips", []) if m else []
+    return llm.extract_json(llm.complete(SYSTEM, user, max_tokens=2500, ai_cfg=ai_cfg)).get("clips", [])
 
 
 def heuristic(chunk, z, hc):
@@ -172,20 +164,20 @@ def find(words, wav_path, video, source, cfg):
     if len(sents) < 5:
         return []
     z = read_energy(wav_path)
-    client = _client()
-    if client is None:
-        print("no ANTHROPIC_API_KEY: using the simple heuristic instead of Claude", file=sys.stderr)
+    use_llm = llm.available(cfg.get("ai"))
+    if not use_llm:
+        print("no LLM key (GEMINI_API_KEY / GROQ_API_KEY): using the simple heuristic", file=sys.stderr)
     cands = []
     for chunk in chunks(sents, hc["chunk_seconds"], hc["chunk_overlap"]):
-        if client is None:
+        if not use_llm:
             raw = heuristic(chunk, z, hc)
         else:
             try:
-                raw = ask_claude(client, cfg["ai"]["model"], source, video, chunk,
-                                 loud_seconds(z, chunk[0]["s"], chunk[-1]["e"]), hc["clips_per_chunk"])
-            except Exception as e:
-                print(f"claude call failed for one chunk: {e}", file=sys.stderr)
-                continue
+                raw = ask_llm(cfg.get("ai"), source, video, chunk,
+                              loud_seconds(z, chunk[0]["s"], chunk[-1]["e"]), hc["clips_per_chunk"])
+            except Exception as e:   # providers exhausted or unusable reply: use the heuristic for this chunk
+                print(f"LLM failed for one chunk ({e}); using the heuristic for it", file=sys.stderr)
+                raw = heuristic(chunk, z, hc)
         for c in raw:
             f = finish(c, sents, words, z, hc, hc.get("banned_phrases", []))
             if f and f["score"] >= hc["min_score"]:

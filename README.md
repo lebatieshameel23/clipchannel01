@@ -4,10 +4,22 @@ Every day, with no manual steps after setup:
 
 ```
 new videos at your sources -> audio + transcript (YouTube captions, else whisper)
-   -> best 20-50 s moments (loudness spikes + Claude reading the transcript)
+   -> best 20-50 s moments (loudness spikes + a free LLM reading the transcript)
    -> cut and render 1080x1920 with word-highlighted captions, hook title, source credit
    -> scheduled upload, 3 a day  (rendered clips also kept in out/clips/ for TikTok, Reels or campaigns)
 ```
+
+**Cost: $0.**
+
+| Piece | Free service | Card needed? |
+|---|---|---|
+| Scheduling and rendering | GitHub Actions (free for public repos) | No |
+| Highlight picking | Google Gemini API free tier (key from aistudio.google.com/apikey); optional free backups: Groq, OpenRouter | No |
+| Transcripts | YouTube captions via yt-dlp, else faster-whisper on the runner | No |
+| Upload | YouTube Data API | No |
+
+Paid Anthropic is still supported but optional (`ANTHROPIC_API_KEY`, used as the last fallback). GitHub Models was
+retired on 30 July 2026, so it is not used. Keep the repo **public**: private repos have limited free minutes.
 
 ## The one rule
 
@@ -33,8 +45,9 @@ authorised clipping campaigns that pay per verified views (see "Money" below).
    `python auth_youtube.py` signed in as the clip channel's account. It prints three values. Uploads from an
    unaudited API project stay private until you pass YouTube's API compliance audit; until then you flip them public
    in YouTube Studio.
-5. **Secrets** (repo Settings > Secrets and variables > Actions): `ANTHROPIC_API_KEY`, `YT_CLIENT_ID`,
-   `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`. Also Settings > Actions > General > Workflow permissions: Read and write.
+5. **Secrets** (repo Settings > Secrets and variables > Actions): `GEMINI_API_KEY` (free), `YT_CLIENT_ID`,
+   `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`. Optional free backups: `GROQ_API_KEY` (console.groq.com),
+   `OPENROUTER_API_KEY` (openrouter.ai/keys); if Gemini is rate limited the next key is used. Also Settings > Actions > General > Workflow permissions: Read and write.
 6. **Go live:** Actions tab > "Daily clips" > Run workflow. After that it runs by itself at 05:00 SAST.
 
 ## Layouts (per source)
@@ -49,7 +62,8 @@ authorised clipping campaigns that pay per verified views (see "Money" below).
 - Pickier clips: raise `highlights.min_score`. More or fewer a day: edit `schedule.slots`.
 - Add words to `highlights.banned_phrases` to drop clips containing them.
 - Rendered files: the `clips` artifact on each workflow run (kept 14 days).
-- Without `ANTHROPIC_API_KEY` the highlight finder falls back to a simple loudness-and-speech heuristic. Much weaker.
+- With no LLM key at all, or when every provider is rate limited, the highlight finder falls back to a simple loudness-and-speech heuristic for that video or chunk. Much weaker.
+- Calls used: about one per 7-minute chunk, so roughly 17 for a 2-hour stream, times `max_videos_per_run`. Free limits change without notice and Google no longer publishes per-model numbers (see aistudio.google.com/rate-limit). The pipeline paces itself and fails over, but if you add many sources, lower `max_videos_per_run`.
 
 ## Money, honestly
 
@@ -62,9 +76,8 @@ authorised clipping campaigns that pay per verified views (see "Money" below).
 
 ## Honest limits
 
-- Tested here: source validation, captions parsing, transcript chunking, Claude prompt and reply handling (with a
-  stand-in for Claude), highlight snapping, all three layouts, section-offset maths, scheduling, queue and history.
-- **Not tested here (no network):** yt-dlp downloads, faster-whisper, real Claude and YouTube calls. Run the workflow
+- Tested here: source validation, captions parsing, transcript chunking, the LLM client (retries, rate-limit waits, failover between providers) and prompt and reply handling (against local stand-in servers), highlight snapping, all three layouts, section-offset maths, scheduling, queue and history.
+- **Not tested here (no network):** yt-dlp downloads, faster-whisper, real Gemini/Groq and YouTube calls, and whether the default model ids (`gemini-3.8-flash`, `openai/gpt-oss-120b`) are still current; if one stops working the log shows `HTTP 404` and you edit it under `ai:` in `config.yaml`. Run the workflow
   by hand and watch the first run before trusting the schedule.
 - YouTube often blocks downloads from cloud servers ("Sign in to confirm you're not a bot"). Fixes: put a cookies.txt
   from a throwaway Google account (never your channel account) in the `YTDLP_COOKIES` secret, or run the project on

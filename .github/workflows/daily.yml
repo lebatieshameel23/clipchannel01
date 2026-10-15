@@ -39,7 +39,10 @@ jobs:
           fi
       - name: Find highlights, render clips, schedule uploads
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}       # free
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}           # free backup (optional)
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}  # free last resort (optional)
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}    # paid, optional
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}

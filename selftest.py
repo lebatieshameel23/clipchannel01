@@ -39,7 +39,8 @@ def make_words():
 
 
 def main():
-    os.environ.pop("ANTHROPIC_API_KEY", None)
+    for k in ("GEMINI_API_KEY", "GROQ_API_KEY", "OPENROUTER_API_KEY", "ANTHROPIC_API_KEY"):
+        os.environ.pop(k, None)   # the self-test must not call any LLM
     work = CACHE / "selftest"
     work.mkdir(parents=True, exist_ok=True)
     video = work / "source.mp4"
