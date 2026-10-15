@@ -1,0 +1,46 @@
+channel:
+  name: "My Clips"            # for your reference
+  handle: "@yourhandle"       # shown top-left on every clip
+
+timezone: Africa/Johannesburg
+
+schedule:
+  slots: ["09:00", "14:00", "19:30"]   # local times, one clip each
+  days_ahead: 1                        # each daily run schedules this many days ahead
+
+upload:
+  enabled: true                        # false = render clips only (they land in out/clips/)
+
+discovery:
+  recent_per_source: 8                 # newest videos checked per source
+  max_videos_per_run: 3                # videos analysed per daily run
+  queue_target: 12                     # stop analysing once this many clips are waiting
+  min_video_minutes: 5
+  max_video_minutes: 240
+  max_clips_per_video_per_run: 1       # spreads each day's clips across different videos
+
+transcript:
+  prefer_captions: true                # use YouTube captions when they exist (fast)
+  whisper_model: base.en               # fallback; small.en is more accurate but about 3x slower
+  language: en
+
+highlights:
+  chunk_seconds: 420                   # transcript is read in 7-minute pieces
+  chunk_overlap: 45
+  clips_per_chunk: 3
+  clips_per_video: 6
+  min_seconds: 20
+  max_seconds: 50
+  min_words: 40                        # a clip needs real speech
+  min_score: 7.0                       # Claude's 1-10 score + up to 2 for loud audio; raise to be pickier
+  banned_phrases:                      # clips containing any of these are dropped; add your own
+    - "my address is"
+    - "my phone number is"
+    - "credit card number"
+
+ai:
+  model: claude-sonnet-5-5
+
+captions:
+  font_name: "DejaVu Sans"             # or put a .ttf in assets/fonts/ and use its family name
+  font_size: 84

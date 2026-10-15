@@ -1,0 +1,9 @@
+out/
+cache/
+inbox/*
+!inbox/.gitkeep
+client_secret.json
+cookies.txt
+.env
+__pycache__/
+*.pyc

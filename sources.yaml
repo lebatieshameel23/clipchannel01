@@ -1,0 +1,35 @@
+# Where clips come from. The pipeline REFUSES any source without a permission type and a proof note.
+#
+# permission:
+#   own               your own streams or videos
+#   creator_approved  the creator told you, in writing, that you may clip and post their content
+#   campaign          an authorised clipping campaign (for example a Whop Content Rewards campaign) whose
+#                     rules let you use the footage; paste the campaign link into proof
+#   cc_by             the video is published under a Creative Commons Attribution licence
+# proof: one line saying who allowed it and where that is written down (a link, a message date).
+#
+# url:   a channel, playlist or single-video URL that yt-dlp understands (YouTube, Twitch, Kick...).
+# path:  or a file pattern on the machine running this, for example "inbox/*.mp4" (use this when you run the
+#        project on your own computer; GitHub is not the place for big video files).
+# layout: blur_fit (default) | fill | split   (split needs facecam: [x, y, w, h] as fractions of the frame)
+# category: YouTube category id for uploads, "24" Entertainment (default), "20" Gaming, "22" People and Blogs
+# required_tags / credit_text: whatever the creator or campaign rules ask for in the description.
+#
+# Nothing runs until you add a source below.
+sources: []
+
+# Example:
+# sources:
+#   - name: "My Stream"
+#     url: "https://www.twitch.tv/yourname/videos"
+#     permission: own
+#     proof: "my own channel"
+#     layout: split
+#     facecam: [0.70, 0.62, 0.28, 0.34]
+#     category: "20"
+#
+#   - name: "Some Creator"
+#     url: "https://www.youtube.com/@somecreator/videos"
+#     permission: campaign
+#     proof: "Whop campaign https://whop.com/... , rules allow YouTube Shorts, accepted 2026-10-15"
+#     required_tags: ["#somecreator"]
