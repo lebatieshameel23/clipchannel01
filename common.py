@@ -14,8 +14,13 @@ CACHE = ROOT / "cache"
 OUT = ROOT / "out"
 HISTORY = CONTENT / "history.json"
 
-PERMISSIONS = {"own", "creator_approved", "campaign", "cc_by"}
+PERMISSIONS = {"own", "creator_approved", "campaign", "cc_by", "public_domain"}
 LAYOUTS = {"blur_fit", "fill", "split"}
+
+
+def licence_is_cc(licence):
+    """True if yt-dlp's per-video 'license' text says Creative Commons. Missing or unknown means False."""
+    return "creative commons" in str(licence or "").lower()
 
 
 def load_config():

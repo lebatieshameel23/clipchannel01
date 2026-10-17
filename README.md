@@ -35,12 +35,12 @@ authorised clipping campaigns that pay per verified views (see "Money" below).
 
 1. **Test locally, no accounts:** install Python and ffmpeg, then `pip install -r requirements.txt` and
    `python selftest.py`. It builds a fake video and renders one clip in each layout to `out/` (takes about 2 minutes).
-2. **Add a source** in `sources.yaml` (examples inside). Set your handle, time zone and posting times in `config.yaml`.
+2. **Check the sources** in `sources.yaml`. It ships with **NASA** (public domain per NASA's media guidelines; read the page and its limits on astronaut likenesses and third-party footage). Add your own, `cc_by` or approved sources the same way (examples inside). Public domain does not exempt a channel from YouTube's reused-content policy, so keep the captions and hook titles that add value, and do not make clips that read as ads. Set your handle, time zone and posting times in `config.yaml`.
 3. **Make a new GitHub repo for this project** (separate from your coding channel, so secrets and quota stay separate)
    and upload everything including the hidden `.github` folder. Private repos get a limited number of free Actions
    minutes a month (check GitHub's billing page); long streams transcribed with whisper can use a lot, so keep
    `max_videos_per_run` low or run on your own computer instead.
-4. **YouTube login for the clip channel:** in Google Cloud Console create a project, enable **YouTube Data API v3**,
+4. **YouTube login for the clip channel:** on a phone follow `YOUTUBE_LOGIN.md` (no computer needed). Otherwise, in Google Cloud Console create a project, enable **YouTube Data API v3**,
    create an OAuth client of type **Desktop app**, save it as `client_secret.json` here, and run
    `python auth_youtube.py` signed in as the clip channel's account. It prints three values. Uploads from an
    unaudited API project stay private until you pass YouTube's API compliance audit; until then you flip them public

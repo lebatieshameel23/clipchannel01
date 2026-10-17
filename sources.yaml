@@ -5,22 +5,36 @@
 #   creator_approved  the creator told you, in writing, that you may clip and post their content
 #   campaign          an authorised clipping campaign (for example a Whop Content Rewards campaign) whose
 #                     rules let you use the footage; paste the campaign link into proof
-#   cc_by             the video is published under a Creative Commons Attribution licence
+#   cc_by             published under a Creative Commons Attribution licence. The pipeline also checks each
+#                     video's own licence on YouTube and skips any video that is not Creative Commons.
+#   public_domain     material the owner has put in the public domain (for example US government media)
 # proof: one line saying who allowed it and where that is written down (a link, a message date).
 #
 # url:   a channel, playlist or single-video URL that yt-dlp understands (YouTube, Twitch, Kick...).
 # path:  or a file pattern on the machine running this, for example "inbox/*.mp4" (use this when you run the
 #        project on your own computer; GitHub is not the place for big video files).
 # layout: blur_fit (default) | fill | split   (split needs facecam: [x, y, w, h] as fractions of the frame)
-# category: YouTube category id for uploads, "24" Entertainment (default), "20" Gaming, "22" People and Blogs
+# category: YouTube category id for uploads, "24" Entertainment (default), "28" Science & Technology
 # required_tags / credit_text: whatever the creator or campaign rules ask for in the description.
-#
-# Nothing runs until you add a source below.
-sources: []
 
-# Example:
-# sources:
-#   - name: "My Stream"
+sources:
+  # NASA's official channel. NASA says its content "generally [is] not subject to copyright in the United
+  # States" and may be used without explicit permission, if you do not imply endorsement, credit NASA, and
+  # leave third-party material alone (it is marked with its owner's name). Read the page before you go live:
+  # it also limits using the names or likenesses of current NASA staff and astronauts in commercial or
+  # promotional content. Keep clips informational, never an ad for anything.
+  - name: "NASA"
+    url: "https://www.youtube.com/@NASA/videos"
+    permission: public_domain
+    proof: "NASA Media Usage Guidelines https://www.nasa.gov/nasa-brand-center/images-and-media/ (read 2026-10-17)"
+    layout: blur_fit
+    category: "28"
+    credit_text: "Source: NASA"
+    required_tags: ["#nasa", "#space"]
+
+# More sources you can add once the permission is real:
+#
+#   - name: "My Stream"                       # your own content: the safest source of all
 #     url: "https://www.twitch.tv/yourname/videos"
 #     permission: own
 #     proof: "my own channel"
@@ -28,8 +42,14 @@ sources: []
 #     facecam: [0.70, 0.62, 0.28, 0.34]
 #     category: "20"
 #
+#   - name: "A CC BY channel"                 # on YouTube search: Filters > Features > Creative Commons
+#     url: "https://www.youtube.com/@channel/videos"
+#     permission: cc_by
+#     proof: "Videos show 'Creative Commons Attribution license (reuse allowed)' in the description, checked 2026-10-17"
+#     credit_text: "Source: Channel name (CC BY)"
+#
 #   - name: "Some Creator"
 #     url: "https://www.youtube.com/@somecreator/videos"
 #     permission: campaign
-#     proof: "Whop campaign https://whop.com/... , rules allow YouTube Shorts, accepted 2026-10-15"
+#     proof: "Whop campaign https://whop.com/... , rules allow YouTube Shorts, accepted 2026-10-17"
 #     required_tags: ["#somecreator"]

@@ -19,7 +19,7 @@ import fetch
 import highlights
 import render_clip
 import transcribe
-from common import (CACHE, OUT, QUEUE, ROOT, USED, file_video_id, load_config, load_history,
+from common import (CACHE, OUT, QUEUE, ROOT, USED, file_video_id, licence_is_cc, load_config, load_history,
                     load_sources, queue_items, save_history)
 
 NOTES = {
@@ -27,6 +27,7 @@ NOTES = {
     "creator_approved": "Used with the creator's permission.",
     "campaign": "Made for an authorised clipping campaign.",
     "cc_by": "Licensed under Creative Commons Attribution.",
+    "public_domain": "Public-domain footage. This channel is not affiliated with or endorsed by the source.",
 }
 
 
@@ -90,6 +91,13 @@ def wav_seconds(wav):
 
 def analyze_video(video, src, cfg, hist):
     workdir = CACHE / safe(video["id"])
+    if src["permission"] == "cc_by" and video["kind"] == "url":
+        # A channel can mix licences, so check THIS video's own licence before using it.
+        lic = fetch.video_info(video["url"]).get("license")
+        if not licence_is_cc(lic):
+            print(f"  skipped: this video's licence is {lic!r}, not Creative Commons", file=sys.stderr)
+            hist["analyzed"][video["id"]] = {"title": video["title"], "skipped": "licence"}
+            return 0
     try:
         wav = (fetch.extract_audio(video["path"], workdir) if video["kind"] == "file"
                else fetch.download_audio(video["url"], workdir))
